@@ -6,7 +6,22 @@ set -e
 
 # Configuration
 SERVER_PUBLIC_KEY_FILE="${SERVER_PUBLIC_KEY_FILE:-/etc/wireguard/server_public.key}"
-SERVER_ENDPOINT="${SERVER_ENDPOINT:-your-server-ip:51820}"
+
+# Get server endpoint - require explicit setting or auto-detect
+if [ -z "${SERVER_ENDPOINT}" ]; then
+    # Try to auto-detect public IP
+    PUBLIC_IP=$(curl -s --connect-timeout 5 https://api.ipify.org || curl -s --connect-timeout 5 https://ifconfig.me || echo "")
+    if [ -z "${PUBLIC_IP}" ]; then
+        echo "[ERROR] SERVER_ENDPOINT가 설정되지 않았고 공개 IP를 자동 감지할 수 없습니다"
+        echo "[ERROR] SERVER_ENDPOINT not set and could not auto-detect public IP"
+        echo ""
+        echo "다음 명령으로 실행하세요 / Run with:"
+        echo "  SERVER_ENDPOINT=your-server-ip:51820 $0 $@"
+        exit 1
+    fi
+    SERVER_ENDPOINT="${PUBLIC_IP}:51820"
+    echo "[INFO] 자동 감지된 서버 엔드포인트 / Auto-detected server endpoint: ${SERVER_ENDPOINT}"
+fi
 DNS_SERVER="${DNS_SERVER:-1.1.1.1,8.8.8.8}"
 BASE_IP="10.13.13"
 PEERS_DIR="/etc/wireguard/peers"
@@ -29,7 +44,31 @@ if [ -z "$1" ]; then
 fi
 
 CLIENT_NAME="$1"
-CLIENT_NUM="${2:-$(ls -1 ${PEERS_DIR} 2>/dev/null | wc -l | xargs expr 2 +)}"
+
+# Calculate next available client number if not provided
+if [ -z "$2" ]; then
+    # Find highest used client number from existing peer configs
+    HIGHEST_NUM=1
+    if [ -d "${PEERS_DIR}" ]; then
+        for peer_dir in ${PEERS_DIR}/*/; do
+            if [ -d "$peer_dir" ]; then
+                # Extract IP from client config if exists
+                for conf_file in ${peer_dir}*.conf; do
+                    if [ -f "$conf_file" ] && [ "$(basename "$conf_file")" != "server_peer.conf" ]; then
+                        IP_NUM=$(grep -E "^Address\s*=" "$conf_file" 2>/dev/null | sed -E 's/.*\.([0-9]+)\/.*/\1/' || echo "")
+                        if [ -n "$IP_NUM" ] && [ "$IP_NUM" -gt "$HIGHEST_NUM" ] 2>/dev/null; then
+                            HIGHEST_NUM=$IP_NUM
+                        fi
+                    fi
+                done
+            fi
+        done
+    fi
+    CLIENT_NUM=$((HIGHEST_NUM + 1))
+    echo "[INFO] 자동 할당된 클라이언트 번호 / Auto-assigned client number: ${CLIENT_NUM}"
+else
+    CLIENT_NUM="$2"
+fi
 
 # Validate client number
 if [ "$CLIENT_NUM" -lt 2 ] || [ "$CLIENT_NUM" -gt 254 ]; then

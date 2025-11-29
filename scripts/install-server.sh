@@ -93,7 +93,14 @@ generate_keys() {
 
 # Get server's public IP
 get_public_ip() {
-    PUBLIC_IP=$(curl -s https://api.ipify.org || curl -s https://ifconfig.me)
+    PUBLIC_IP=$(curl -s --connect-timeout 5 https://api.ipify.org || curl -s --connect-timeout 5 https://ifconfig.me || echo "")
+    if [ -z "${PUBLIC_IP}" ]; then
+        echo "[WARNING] 공개 IP를 자동 감지할 수 없습니다"
+        echo "[WARNING] Could not auto-detect public IP"
+        echo "[WARNING] 클라이언트 설정에서 SERVER_ENDPOINT를 수동으로 설정하세요"
+        echo "[WARNING] Please set SERVER_ENDPOINT manually in client configurations"
+        PUBLIC_IP="<YOUR_SERVER_IP>"
+    fi
     echo "${PUBLIC_IP}"
 }
 

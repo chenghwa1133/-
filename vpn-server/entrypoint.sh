@@ -79,8 +79,14 @@ main() {
     echo "[INFO] VPN Server is running..."
     echo "[INFO] Listening on port ${SERVER_PORT}/UDP"
     
-    # Keep container running
-    tail -f /dev/null
+    # Handle signals for graceful shutdown
+    trap 'echo "[INFO] Shutting down WireGuard..."; wg-quick down ${WG_INTERFACE}; exit 0' SIGTERM SIGINT
+    
+    # Keep container running and wait for signals
+    while true; do
+        sleep 60 &
+        wait $!
+    done
 }
 
 main
