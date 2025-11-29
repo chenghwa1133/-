@@ -1,0 +1,30 @@
+# Ignore config files with sensitive data
+*.key
+*.pem
+
+# WireGuard configs (contain private keys)
+vpn-server/config/
+/etc/wireguard/
+
+# Peer directories with private keys
+peers/
+
+# Docker volumes
+data/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+/tmp/
