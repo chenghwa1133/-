@@ -1,0 +1,17 @@
+{
+  "name": "korea-payment",
+  "version": "1.0.0",
+  "description": "Korea Payment processing application for handling Korean payment gateways",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "build": "echo 'No build step required'",
+    "test": "node --test src/**/*.test.js"
+  },
+  "keywords": ["payment", "korea", "pg", "gateway"],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
