@@ -87,6 +87,12 @@ describe('Helper utilities', () => {
       assert.strictEqual(validateEmail('missing@domain'), false);
       assert.strictEqual(validateEmail('@nodomain.com'), false);
     });
+
+    test('should return false for null/undefined inputs', () => {
+      assert.strictEqual(validateEmail(null), false);
+      assert.strictEqual(validateEmail(undefined), false);
+      assert.strictEqual(validateEmail(123), false);
+    });
   });
 
   describe('validateKoreanPhone', () => {
@@ -100,19 +106,29 @@ describe('Helper utilities', () => {
       assert.strictEqual(validateKoreanPhone('123-456-7890'), false);
       assert.strictEqual(validateKoreanPhone('02-1234-5678'), false);
     });
+
+    test('should return false for null/undefined inputs', () => {
+      assert.strictEqual(validateKoreanPhone(null), false);
+      assert.strictEqual(validateKoreanPhone(undefined), false);
+      assert.strictEqual(validateKoreanPhone(123), false);
+    });
   });
 
   describe('maskCardNumber', () => {
-    test('should mask middle digits of card number', () => {
+    test('should mask middle digits of card number with consistent format', () => {
       const masked = maskCardNumber('1234567890123456');
-      assert.ok(masked.startsWith('1234'));
-      assert.ok(masked.endsWith('3456'));
-      assert.ok(masked.includes('*'));
+      assert.strictEqual(masked, '1234-****-****-3456');
     });
 
     test('should handle short card numbers', () => {
       const masked = maskCardNumber('1234');
       assert.strictEqual(masked, '****');
+    });
+
+    test('should return empty string for non-string inputs', () => {
+      assert.strictEqual(maskCardNumber(null), '');
+      assert.strictEqual(maskCardNumber(undefined), '');
+      assert.strictEqual(maskCardNumber(123), '');
     });
   });
 });

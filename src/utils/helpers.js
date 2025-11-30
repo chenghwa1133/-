@@ -53,6 +53,9 @@ function formatCurrency(amount, currency = 'KRW') {
  * @returns {boolean} True if valid email format
  */
 function validateEmail(email) {
+  if (typeof email !== 'string') {
+    return false;
+  }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
@@ -63,6 +66,9 @@ function validateEmail(email) {
  * @returns {boolean} True if valid Korean phone format
  */
 function validateKoreanPhone(phone) {
+  if (typeof phone !== 'string') {
+    return false;
+  }
   // Accepts formats: 010-1234-5678, 01012345678, 010 1234 5678
   const phoneRegex = /^01[0-9][-\s]?[0-9]{3,4}[-\s]?[0-9]{4}$/;
   return phoneRegex.test(phone);
@@ -71,17 +77,20 @@ function validateKoreanPhone(phone) {
 /**
  * Mask card number for display
  * @param {string} cardNumber - Full card number
- * @returns {string} Masked card number
+ * @returns {string} Masked card number in format XXXX-****-****-XXXX
  */
 function maskCardNumber(cardNumber) {
+  if (typeof cardNumber !== 'string') {
+    return '';
+  }
   const cleaned = cardNumber.replace(/\D/g, '');
   if (cleaned.length < 8) {
     return '*'.repeat(cleaned.length);
   }
   const first4 = cleaned.slice(0, 4);
   const last4 = cleaned.slice(-4);
-  const middle = '*'.repeat(cleaned.length - 8);
-  return `${first4}-${middle.slice(0, 4)}-${middle.slice(4) || '****'}-${last4}`;
+  // Always use consistent 4-digit grouping with asterisks for middle sections
+  return `${first4}-****-****-${last4}`;
 }
 
 module.exports = {
